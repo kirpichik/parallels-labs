@@ -25,9 +25,25 @@ typedef __m256 current_type_t;
 #error Unknown _TYPE_SIZE macros value
 #endif
 
-#define BYTES_COUNT (1024 * 1024 * 100)
+#define MBYTES 1000
+#define BYTES_COUNT (1024 * 1024 * MBYTES)
+
+static inline uint64_t __rdtscp(uint32_t* aux) {
+  uint64_t rax, rdx;
+  asm volatile ("rdtsc\n" : "=a" (rax), "=d" (rdx) : :);
+  return (rdx << 32) + rax;
+}
 
 int main(int argc, char* argv[]) {
+  unsigned int arg;
+
+  if (argc != 2) {
+    fprintf(stderr, "Usage: <clock-speed>\n");
+    return -1;
+  }
+
+  uint64_t speed = atol(argv[1]);
+
   size_t size = BYTES_COUNT - (BYTES_COUNT % sizeof(current_type_t));
   size_t elems_count = BYTES_COUNT / sizeof(current_type_t);
   printf("Allocating %lu elements on %lu bytes...\n", elems_count, size);
@@ -35,21 +51,21 @@ int main(int argc, char* argv[]) {
   current_type_t* dst = (current_type_t*) malloc(size);
 
   printf("Start copying...\n");
-  // TODO - begin timer
+  uint64_t start = __rdtscp(&arg);
 
   for (size_t i = 0; i < elems_count; i++)
     dst[i] = src[i];
 
-  // TODO - end timer
-  printf("Copy finished in:\n");
+  uint64_t end = __rdtscp(&arg);
+  printf("Copy finished in: %f\n", ((double) end - start) / speed);
 
   printf("Start memcpy test...\n");
-  // TODO - begin timer
+  start = __rdtscp(&arg);
 
   memcpy(dst, src, size);
 
-  // TODO - end timer
-  printf("Memcpy finished in:\n");
+  end = __rdtscp(&arg);
+  printf("Memcpy finished in: %f\n", ((double) end - start) / speed);
 
   fprintf(stderr, "Array depend: %lu, %lu\n", (size_t) (src + size), (size_t) (dst + size));
 
