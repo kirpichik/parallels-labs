@@ -3,7 +3,7 @@ CC=cc
 
 # Compiler flags
 INCLUDES=
-CFLAGS=-Wall -std=gnu99 $(INCLUDES)
+CFLAGS=-Wall -std=gnu99 -O2 $(INCLUDES)
 TYPE_SIZE_FLAG=-D_TYPE_SIZE
 LDFLAGS=
 
@@ -38,3 +38,4 @@ clean:
 
 clear: clean
 
+rebuild: clean all
