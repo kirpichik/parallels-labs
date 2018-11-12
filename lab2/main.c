@@ -25,8 +25,8 @@ typedef __m256 current_type_t;
 #error Unknown _TYPE_SIZE macros value
 #endif
 
-#define MBYTES 1024
-#define BYTES_COUNT (1024 * 1024 * MBYTES)
+#define MBYTES 2048
+#define BYTES_COUNT (1024L * 1024 * MBYTES)
 
 static inline uint64_t __rdtscp(uint32_t* aux) {
   uint64_t rax, rdx;
