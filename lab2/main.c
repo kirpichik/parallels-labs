@@ -25,8 +25,9 @@ typedef __m256 current_type_t;
 #error Unknown _TYPE_SIZE macros value
 #endif
 
-#define MBYTES 2048
+#define MBYTES 4096
 #define BYTES_COUNT (1024L * 1024 * MBYTES)
+#define REPEATS_COUNT 5
 
 static inline uint64_t __rdtscp(uint32_t* aux) {
   uint64_t rax, rdx;
@@ -36,13 +37,15 @@ static inline uint64_t __rdtscp(uint32_t* aux) {
 
 int main(int argc, char* argv[]) {
   unsigned int arg;
+  uint64_t start, end;
+  double time, speed, all_time = 0, all_speed = 0;
 
   if (argc != 2) {
     fprintf(stderr, "Usage: <clock-speed>\n");
     return -1;
   }
 
-  uint64_t speed = atol(argv[1]);
+  uint64_t clock = atol(argv[1]);
 
   size_t size = BYTES_COUNT - (BYTES_COUNT % sizeof(current_type_t));
   size_t elems_count = BYTES_COUNT / sizeof(current_type_t);
@@ -50,14 +53,24 @@ int main(int argc, char* argv[]) {
   current_type_t* src = (current_type_t*) malloc(size);
   current_type_t* dst = (current_type_t*) malloc(size);
 
-  printf("Start copying...\n");
-  uint64_t start = __rdtscp(&arg);
+  for (int repeat = 0; repeat < REPEATS_COUNT; repeat++) {
+    printf("[%d/%d] Start copying...\n", repeat, REPEATS_COUNT);
+    start = __rdtscp(&arg);
 
-  for (size_t i = 0; i < elems_count; i++)
-    dst[i] = src[i];
+    for (size_t i = 0; i < elems_count; i++)
+      dst[i] = src[i];
 
-  uint64_t end = __rdtscp(&arg);
-  printf("Copy finished in: %f\n", ((double) end - start) / speed);
+    end = __rdtscp(&arg);
+    time = ((double) end - start) / clock;
+    speed = size / (time * 1024 * 1024);
+    all_time += time;
+    all_speed += speed;
+    printf("[%d/%d] Copy finished in: %f sec, Speed: %f MB/sec\n", repeat,
+        REPEATS_COUNT, time, speed);
+  }
+
+  printf("Average time: %f sec, speed: %f MB/sec\n",
+      all_time / REPEATS_COUNT, all_speed / REPEATS_COUNT);
 
   printf("Start memcpy test...\n");
   start = __rdtscp(&arg);
@@ -65,7 +78,7 @@ int main(int argc, char* argv[]) {
   memcpy(dst, src, size);
 
   end = __rdtscp(&arg);
-  printf("Memcpy finished in: %f\n", ((double) end - start) / speed);
+  printf("Memcpy finished in: %f sec\n", ((double) end - start) / speed);
 
   fprintf(stderr, "Array depend: %lu, %lu\n", (size_t) (src + size), (size_t) (dst + size));
 
