@@ -78,7 +78,9 @@ int main(int argc, char* argv[]) {
   memcpy(dst, src, size);
 
   end = __rdtscp(&arg);
-  printf("Memcpy finished in: %f sec\n", ((double) end - start) / speed);
+  time = ((double) end - start) / clock;
+  speed = size / (time * 1024 * 1024);
+  printf("Memcpy finished in: %f sec, Speed: %f MB/sec\n", time, speed);
 
   fprintf(stderr, "Array depend: %lu, %lu\n", (size_t) (src + size), (size_t) (dst + size));
 
