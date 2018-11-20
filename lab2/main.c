@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   unsigned int arg;
   uint64_t start, end;
   double time, speed, all_time = 0, all_speed = 0;
-  double best_speed = 0, best_time;
+  double best_speed = 0, best_time = -1;
 
   if (argc != 2) {
     fprintf(stderr, "Usage: <clock-speed>\n");
