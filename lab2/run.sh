@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 OS=$(uname)
 CLOCK_SPEED=$1
