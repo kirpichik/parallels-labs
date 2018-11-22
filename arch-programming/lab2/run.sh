@@ -4,14 +4,14 @@ rm result.csv prog.c test
 
 for i in $(seq 10 $1)
 do
-  cat prog.prefix > prog.c
+  cat prog.prefix.c > prog.c
 
   for j in $(seq 1 $i)
   do
     echo "__asm__(\"nop\");" >> prog.c
   done
 
-  cat prog.suffix >> prog.c
+  cat prog.suffix.c >> prog.c
 
   echo "===== Compiling $i... ====="
   gcc -O2 prog.c -o prog
