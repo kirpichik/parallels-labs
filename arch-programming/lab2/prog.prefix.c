@@ -5,58 +5,49 @@
 #include <x86intrin.h>
 #include <time.h>
 
-#define ARRAY_SIZE (12 * 1024 * 1024 / sizeof(int))
+#define ROB_CLEAR_COUNT 400
+#define L3_SIZE 6
+#define ARRAY_SIZE (L3_SIZE * 2 * 1024 * 1024 / sizeof(int))
 
 int arr[ARRAY_SIZE];
 
 void arr_random_init() {
-    /*int x = 0, ind;
-    for (int i = 0; i < ARRAY_SIZE; ++i)
+    int prev = 0;
+    int pos;
+
+    for (size_t i = 0; i < ARRAY_SIZE; i++)
         arr[i] = ARRAY_SIZE;
 
-    for (int k = 0; k < ARRAY_SIZE - 1; ++k) {
-        while (arr[ind = rand() % ARRAY_SIZE] != ARRAY_SIZE || ind == x);
-        arr[x] = ind;
-        x = ind;
-    }
-
-    arr[x] = 0;*/
-
-    size_t pos = 0, prev = 0;
-    memset(arr, -1, sizeof(arr));
-
-    for (size_t i = 0; i < ARRAY_SIZE; i++) {
-        pos = rand() % ARRAY_SIZE;
-        while (arr[pos] != -1) {
-            if (pos++ >= ARRAY_SIZE)
-                pos = 0;
-        }
-
-        arr[pos] = prev;
+    for (size_t i = 0; i < ARRAY_SIZE - 1; i++) {
+        while (arr[pos = rand() % ARRAY_SIZE] != ARRAY_SIZE || pos == prev);
+        arr[prev] = pos;
         prev = pos;
     }
 
-    arr[0] = prev;
+    arr[prev] = 0;
 }
 
 int main(int argc, const char *argv[]) {
     unsigned int iter_num = atoi(argv[1]);
     uint64_t start;
     uint64_t end;
-    int k = 0;
+    int pos = 0;
 
     srand(time(NULL));
+    fprintf(stderr, "arr = %lu\n", sizeof(arr));
     fprintf(stderr, "Init array...\n");
     arr_random_init();
     fprintf(stderr, "Computing...\n");
 
-    int* trash = (int *) calloc(sizeof(int), ARRAY_SIZE);
+    // Очищаем кэш
+    size_t* cleanup = (size_t*)malloc(sizeof(size_t) * ARRAY_SIZE);
     for (size_t i = 0; i < ARRAY_SIZE; ++i)
-        trash[i] = i;
+        cleanup[i] = i;
 
-    for (int i = 0; i < 400; i++)
+    // Очищаем буфер переупорядочивания
+    for (int i = 0; i < ROB_CLEAR_COUNT; i++)
         __asm__("nop");
 
     start = __rdtsc();
     for (size_t i = 0; i < iter_num; i++) {
-        k = arr[k];
+        pos = arr[pos];
