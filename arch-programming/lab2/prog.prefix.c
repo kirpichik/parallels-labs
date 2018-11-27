@@ -11,6 +11,12 @@
 
 int arr[ARRAY_SIZE];
 
+/*=========================WARNING=======================
+*If your ARRAY_SIZE more than RAND_MAX in your OS, it may cause problems,
+*because some positions(more than RAND_MAX) in the array won't be reachable.
+*In order to intsialize a larger array for a random walk,
+*another function should be used.
+*/ 
 void arr_random_init() {
     int prev = 0;
     int pos;
@@ -19,6 +25,8 @@ void arr_random_init() {
         arr[i] = ARRAY_SIZE;
 
     for (size_t i = 0; i < ARRAY_SIZE - 1; i++) {
+        //The line below may cause problem. If size of array more than RAND_MAX
+        //you should use another function to generate random numbers. 
         while (arr[pos = rand() % ARRAY_SIZE] != ARRAY_SIZE || pos == prev);
         arr[prev] = pos;
         prev = pos;
