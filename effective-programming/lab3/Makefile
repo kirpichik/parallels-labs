@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -Wall -std=c11 -D_REENTRANT
+CFLAGS=-c -O3 -march=native -Wall -std=c11 -D_REENTRANT
 LDFLAGS=-lpthread
 SOURCES=main.c
 HEADERS=

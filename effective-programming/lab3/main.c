@@ -16,7 +16,7 @@
 #define WORLD_M 64
 #define WORLD_N 32
 #define THREADS_COUNT 4
-#define STEPS 100000
+#define STEPS 1000000
 #define BARRIER_PACK_TYPE DENSE_PACK
 
 typedef struct thread_data {
@@ -30,11 +30,11 @@ typedef struct thread_data {
 static volatile int sync[THREADS_COUNT][BARRIER_PACK_TYPE];
 
 static inline int get_cell(int* field, size_t x, size_t y) {
-  return field[x * (WORLD_M + 2) + y];
+  return field[x * (WORLD_N + 2) + y];
 }
 
 static inline void set_cell(int* field, size_t x, size_t y, int value) {
-  field[x * (WORLD_M + 2) + y] = value;
+  field[x * (WORLD_N + 2) + y] = value;
 }
 
 static inline size_t count_neighbours(int* field, size_t x, size_t y) {
@@ -68,8 +68,8 @@ static inline void swap_worlds(thread_data_t* data) {
 static void generate_world(int* field) {
   srand(time(NULL));
 
-  for (size_t i = 1; i < WORLD_M; i++)
-    for (size_t j = 1; j < WORLD_N; j++)
+  for (size_t i = 1; i <= WORLD_M; i++)
+    for (size_t j = 1; j <= WORLD_N; j++)
       set_cell(field, i, j, (rand() % 100) > LIFE_SPAWN_PERCENT);
 }
 
@@ -83,8 +83,8 @@ static void* life_thread(void* arg) {
   double time;
 
   for (size_t step = 0; step < STEPS; step++) {
-    for (size_t i = begin_x + 1; i < end_x; i++)
-      for (size_t j = begin_y + 1; j < end_y; j++)
+    for (size_t i = begin_x + 1; i <= end_x; i++)
+      for (size_t j = begin_y + 1; j <= end_y; j++)
         update_cell(data->src, data->dest, i, j);
 
     start = __rdtsc();
