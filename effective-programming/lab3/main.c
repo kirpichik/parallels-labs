@@ -16,7 +16,7 @@
 #define WORLD_M 64
 #define WORLD_N 32
 #define THREADS_COUNT 4
-#define STEPS 1000000
+#define STEPS 10
 #define BARRIER_PACK_TYPE DENSE_PACK
 
 typedef struct thread_data {
@@ -107,13 +107,13 @@ int main(int argc, char* argv[]) {
   double min = 0, average = 0;
   int error;
 
-  int* world_src = (int*) malloc((WORLD_M + 2) * (WORLD_N + 2) * sizeof(int));
+  int* world_src = (int*) calloc((WORLD_M + 2) * (WORLD_N + 2), sizeof(int));
   if (!world_src) {
     perror("Cannot allocate src world");
     return -1;
   }
 
-  int* world_dest = (int*) malloc((WORLD_M + 2) * (WORLD_N + 2) * sizeof(int));
+  int* world_dest = (int*) calloc((WORLD_M + 2) * (WORLD_N + 2), sizeof(int));
   if (!world_dest) {
     perror("Cannot allocate dest world");
     free(world_src);
